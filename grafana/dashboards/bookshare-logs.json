@@ -1,0 +1,99 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Log Volume",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum by (container) (count_over_time({container=~\".+\"}[1m]))",
+          "legendFormat": "{{container}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "stacking": { "mode": "normal" }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "id": 2,
+      "title": "book-share-api Logs",
+      "type": "logs",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 6 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "{service=\"book-share-api\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      }
+    },
+    {
+      "id": 3,
+      "title": "cover-detection Logs",
+      "type": "logs",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 18 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "{service=\"cover-detection\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["bookshare", "logs"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "BookShare Logs",
+  "uid": "bookshare-logs",
+  "version": 1
+}

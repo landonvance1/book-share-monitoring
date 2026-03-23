@@ -29,21 +29,30 @@ The monitoring stack runs via Docker Compose on the external `booksharing` netwo
 
 **Grafana** (`grafana/grafana:11.1.0`) — dashboards and visualization, exposed on port 3100. Datasource and dashboard provisioning are file-based under `grafana/provisioning/`.
 
+**Loki** (`grafana/loki:3.6.0`) — log aggregation and storage. Not exposed to the host; only reachable on the internal `monitoring-internal` Docker network by Grafana and Alloy. Stores logs on the local filesystem with 7-day retention.
+
+**Alloy** (`grafana/alloy:v1.14.1`) — log collector that discovers Docker containers via the Docker socket and forwards their logs to Loki. Replaces the now-EOL Promtail. Runs as root (required for Docker socket access).
+
 ### File Structure
 
 ```
-docker-compose.yml          # Prometheus + Grafana services
+docker-compose.yml          # Prometheus + Grafana + Loki + Alloy services
 .env.example                # Grafana admin credentials template
 prometheus/
   prometheus.yml            # Scrape configuration
+loki/
+  loki-config.yml           # Loki storage, retention, and schema config
+alloy/
+  config.alloy              # Alloy log collection pipeline (discovery, relabel, forward)
 grafana/
   provisioning/
     datasources/
-      datasource.yml        # Prometheus datasource
+      datasource.yml        # Prometheus + Loki datasources
     dashboards/
       dashboard.yml         # Dashboard provider config
   dashboards/
     bookshare-overview.json # Overview dashboard (health, request rate, latency, errors)
+    bookshare-logs.json     # Log exploration dashboard (log volume, per-service logs)
 ```
 
 ### Metric Name Conventions
