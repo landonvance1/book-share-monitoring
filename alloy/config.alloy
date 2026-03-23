@@ -1,0 +1,46 @@
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = ".*booksharing-api.*"
+    target_label  = "service"
+    replacement   = "book-share-api"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = ".*cover-detection.*"
+    target_label  = "service"
+    replacement   = "cover-detection"
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  forward_to = [loki.write.loki.receiver]
+}
+
+loki.write "loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+
+    // Retry config: backoff from 500ms up to 5min, up to 30 attempts.
+    // 30 retries covers Loki restarts that may take several minutes (e.g. after a compose restart).
+    // Logs are buffered in memory during retries — if retries are exhausted, entries are dropped.
+    min_backoff_period  = "500ms"
+    max_backoff_period  = "5m"
+    max_backoff_retries = 30
+  }
+}
