@@ -16,6 +16,10 @@ This repository provides monitoring, alerting, and observability tooling for the
 | book-share-api | ASP.NET Core 8.0, PostgreSQL 15, SignalR | REST API (auth, books, shares, chat, notifications, communities) |
 | book-share-cover-detection | Python, Florence-2, GLiNER | `POST /analyze`, `GET /health` |
 
+## Network Architecture
+
+See [`docs/network-diagram.md`](docs/network-diagram.md) for a diagram of how containers, networks, and ports are connected.
+
 ## Stack
 
 | Component | Image | Purpose |
