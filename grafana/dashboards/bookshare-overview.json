@@ -93,17 +93,17 @@
       "datasource": { "type": "prometheus", "name": "Prometheus" },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(http_server_request_duration_seconds_bucket{http_route!~\"/metrics|/health\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(http_server_request_duration_seconds_bucket{http_route!~\"/metrics|/health|/books/analyze/cover\"}[5m])) by (le))",
           "legendFormat": "API p50",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_request_duration_seconds_bucket{http_route!~\"/metrics|/health\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_request_duration_seconds_bucket{http_route!~\"/metrics|/health|/books/analyze/cover\"}[5m])) by (le))",
           "legendFormat": "API p95",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(http_server_request_duration_seconds_bucket{http_route!~\"/metrics|/health\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(http_server_request_duration_seconds_bucket{http_route!~\"/metrics|/health|/books/analyze/cover\"}[5m])) by (le))",
           "legendFormat": "API p99",
           "refId": "C"
         },
@@ -177,6 +177,47 @@
         "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
         "tooltip": { "mode": "multi" }
       }
+    },
+    {
+      "id": 5,
+      "title": "Cover Detection Stage Latency",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 30 },
+      "datasource": { "type": "prometheus", "name": "Prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(cover_detection_ocr_duration_seconds_bucket[5m]))",
+          "legendFormat": "OCR p95",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(cover_detection_nlp_duration_seconds_bucket[5m]))",
+          "legendFormat": "NLP p95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(cover_detection_total_duration_seconds_bucket[5m]))",
+          "legendFormat": "Total p95",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi" }
+      }
     }
   ],
   "schemaVersion": 39,
@@ -187,5 +228,5 @@
   "timezone": "browser",
   "title": "BookShare Overview",
   "uid": "bookshare-overview",
-  "version": 1
+  "version": 3
 }
