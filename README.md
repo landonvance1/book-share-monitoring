@@ -55,7 +55,7 @@ See [`docs/network-diagram.md`](docs/network-diagram.md) for a diagram of how co
 
 Grafana is provisioned with two dashboards under the **BookShare** folder:
 - **BookShare Overview** — service health, request rate, latency, and error rate (Prometheus)
-- **BookShare Logs** — log volume and per-service log explorer (Loki)
+- **BookShare Logs** — log volume, per-service log explorer with level/category filters, and API error rate (Loki)
 
 Scrape targets and log sources will show as down until the monitored services are running on the `booksharing` network.
 
@@ -80,9 +80,13 @@ docker compose restart prometheus
 
 ## Logs
 
-Alloy automatically discovers and collects logs from all Docker containers on the host. Logs are queryable in Grafana using [LogQL](https://grafana.com/docs/loki/latest/query/) via the Loki datasource.
+Alloy automatically discovers and collects logs from all Docker containers on the host. For `book-share-api`, Alloy parses the JSON log output and promotes `level` and `category` as indexed Loki labels. Logs are queryable in Grafana using [LogQL](https://grafana.com/docs/loki/latest/query/) via the Loki datasource.
 
 Useful label filters:
 - `{service="book-share-api"}` — API logs
+- `{service="book-share-api", level="Error"}` — API errors only
+- `{service="book-share-api", category="Services.ShareService"}` — logs from a specific category
 - `{service="cover-detection"}` — cover detection logs
 - `{container="<name>"}` — logs for any specific container by its Docker name
+
+The `| json` pipeline operator enables ad-hoc extraction of structured fields from API log lines (e.g. `ShareId`, `UserId`, `RequestId`).
