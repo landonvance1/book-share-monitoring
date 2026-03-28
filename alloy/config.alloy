@@ -29,7 +29,32 @@ discovery.relabel "containers" {
 loki.source.docker "containers" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.relabel.containers.output
+  forward_to = [loki.process.json_parse.receiver]
+}
+
+loki.process "json_parse" {
   forward_to = [loki.write.loki.receiver]
+
+  stage.json {
+    expressions = {
+      level     = "LogLevel",
+      category  = "Category",
+      message   = "Message",
+      timestamp = "Timestamp",
+    }
+  }
+
+  stage.labels {
+    values = {
+      level    = "",
+      category = "",
+    }
+  }
+
+  stage.timestamp {
+    source = "timestamp"
+    format = "2006-01-02T15:04:05.000Z"
+  }
 }
 
 loki.write "loki" {

@@ -31,7 +31,7 @@ The monitoring stack runs via Docker Compose on the external `booksharing` netwo
 
 **Loki** (`grafana/loki:3.6.0`) — log aggregation and storage. Not exposed to the host; only reachable on the internal `monitoring-internal` Docker network by Grafana and Alloy. Stores logs on the local filesystem with 7-day retention.
 
-**Alloy** (`grafana/alloy:v1.14.1`) — log collector that discovers Docker containers via the Docker socket and forwards their logs to Loki. Replaces the now-EOL Promtail. Runs as root (required for Docker socket access).
+**Alloy** (`grafana/alloy:v1.14.1`) — log collector that discovers Docker containers via the Docker socket, parses JSON logs from `book-share-api` (extracting `level` and `category` as indexed Loki labels and parsing timestamps from the payload), and forwards to Loki. Replaces the now-EOL Promtail. Runs as root (required for Docker socket access).
 
 For a full diagram of containers, networks, and ports see `docs/network-diagram.md`.
 
@@ -45,7 +45,7 @@ prometheus/
 loki/
   loki-config.yml           # Loki storage, retention, and schema config
 alloy/
-  config.alloy              # Alloy log collection pipeline (discovery, relabel, forward)
+  config.alloy              # Alloy log collection pipeline (discovery, relabel, JSON parse, forward)
 grafana/
   provisioning/
     datasources/
@@ -54,8 +54,12 @@ grafana/
       dashboard.yml         # Dashboard provider config
   dashboards/
     bookshare-overview.json # Overview dashboard (health, request rate, latency, errors)
-    bookshare-logs.json     # Log exploration dashboard (log volume, per-service logs)
+    bookshare-logs.json     # Log exploration dashboard (log volume, level/category filters, API error rate, per-service logs)
 ```
+
+### Log Label Conventions
+
+All containers get `service` and `container` labels from Alloy's relabel rules. `book-share-api` additionally gets `level` (mapped from `LogLevel`, e.g. `Information`, `Warning`, `Error`) and `category` (mapped from `Category`, e.g. `Services.ShareService`, `Hubs.ChatHub`) as indexed labels, parsed from its JSON log output. Cover-detection logs are forwarded as plain text with no additional labels.
 
 ### Metric Name Conventions
 
