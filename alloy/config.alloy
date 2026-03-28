@@ -35,25 +35,54 @@ loki.source.docker "containers" {
 loki.process "json_parse" {
   forward_to = [loki.write.loki.receiver]
 
-  stage.json {
-    expressions = {
-      level     = "LogLevel",
-      category  = "Category",
-      message   = "Message",
-      timestamp = "Timestamp",
+  stage.match {
+    selector = "{service=\"book-share-api\"}"
+
+    stage.json {
+      expressions = {
+        level     = "LogLevel",
+        category  = "Category",
+        message   = "Message",
+        timestamp = "Timestamp",
+      }
+    }
+
+    stage.labels {
+      values = {
+        level    = "",
+        category = "",
+      }
+    }
+
+    stage.timestamp {
+      source = "timestamp"
+      format = "2006-01-02T15:04:05.000Z"
     }
   }
 
-  stage.labels {
-    values = {
-      level    = "",
-      category = "",
-    }
-  }
+  stage.match {
+    selector = "{service=\"cover-detection\"}"
 
-  stage.timestamp {
-    source = "timestamp"
-    format = "2006-01-02T15:04:05.000Z"
+    stage.json {
+      expressions = {
+        level     = "level",
+        category  = "logger_name",
+        message   = "message",
+        timestamp = "timestamp",
+      }
+    }
+
+    stage.labels {
+      values = {
+        level    = "",
+        category = "",
+      }
+    }
+
+    stage.timestamp {
+      source = "timestamp"
+      format = "2006-01-02T15:04:05.000Z"
+    }
   }
 }
 

@@ -93,7 +93,7 @@
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         {
-          "expr": "{service=\"cover-detection\"}",
+          "expr": "{service=\"cover-detection\", level=~\"$level\", category=~\"$cover_category\"} | json",
           "refId": "A"
         }
       ],
@@ -146,6 +146,23 @@
         "regex": "",
         "sort": 1,
         "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "loki", "uid": "loki" },
+        "definition": "label_values({service=\"cover-detection\"}, category)",
+        "hide": 0,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "name": "cover_category",
+        "label": "Cover Logger",
+        "options": [],
+        "query": "label_values({service=\"cover-detection\"}, category)",
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
       }
     ]
   },
@@ -157,5 +174,5 @@
   "timezone": "browser",
   "title": "BookShare Logs",
   "uid": "bookshare-logs",
-  "version": 2
+  "version": 3
 }

@@ -31,7 +31,7 @@ The monitoring stack runs via Docker Compose on the external `booksharing` netwo
 
 **Loki** (`grafana/loki:3.6.0`) — log aggregation and storage. Not exposed to the host; only reachable on the internal `monitoring-internal` Docker network by Grafana and Alloy. Stores logs on the local filesystem with 7-day retention.
 
-**Alloy** (`grafana/alloy:v1.14.1`) — log collector that discovers Docker containers via the Docker socket, parses JSON logs from `book-share-api` (extracting `level` and `category` as indexed Loki labels and parsing timestamps from the payload), and forwards to Loki. Replaces the now-EOL Promtail. Runs as root (required for Docker socket access).
+**Alloy** (`grafana/alloy:v1.14.1`) — log collector that discovers Docker containers via the Docker socket, parses JSON logs from both services using service-aware `stage.match` blocks, and forwards to Loki. Replaces the now-EOL Promtail. Runs as root (required for Docker socket access).
 
 For a full diagram of containers, networks, and ports see `docs/network-diagram.md`.
 
@@ -53,14 +53,17 @@ grafana/
     dashboards/
       dashboard.yml         # Dashboard provider config
   dashboards/
-    bookshare-overview.json # Overview dashboard (health, request rate, latency, errors)
+    bookshare-overview.json # Overview dashboard (health, request rate, latency, errors, cover detection stage latency)
     bookshare-logs.json     # Log exploration dashboard (log volume, level/category filters, API error rate, per-service logs)
 ```
 
 ### Log Label Conventions
 
-All containers get `service` and `container` labels from Alloy's relabel rules. `book-share-api` additionally gets `level` (mapped from `LogLevel`, e.g. `Information`, `Warning`, `Error`) and `category` (mapped from `Category`, e.g. `Services.ShareService`, `Hubs.ChatHub`) as indexed labels, parsed from its JSON log output. Cover-detection logs are forwarded as plain text with no additional labels.
+All containers get `service` and `container` labels from Alloy's relabel rules. Both services additionally get `level` and `category` as indexed labels, parsed from their JSON log output via service-aware `stage.match` blocks in `alloy/config.alloy`:
+
+- **book-share-api**: `LogLevel` → `level` (e.g. `Information`, `Warning`, `Error`), `Category` → `category` (e.g. `Services.ShareService`, `Hubs.ChatHub`)
+- **cover-detection**: `level` → `level` (e.g. `INFO`, `ERROR`), `logger_name` → `category` (e.g. `app.services.analyzer`, `app.engines.florence2_onnx_engine`)
 
 ### Metric Name Conventions
 
-The API uses OpenTelemetry metric names (`http_server_request_duration_seconds_*`). Cover-detection uses prometheus-fastapi-instrumentator names (`http_request_duration_seconds_*`). Dashboard queries account for both naming schemes.
+The API uses OpenTelemetry metric names (`http_server_request_duration_seconds_*`). Cover-detection uses prometheus-fastapi-instrumentator names (`http_request_duration_seconds_*`). Cover-detection also exposes custom stage histograms: `cover_detection_ocr_duration_seconds`, `cover_detection_nlp_duration_seconds`, and `cover_detection_total_duration_seconds`. Dashboard queries account for all of these naming schemes.
