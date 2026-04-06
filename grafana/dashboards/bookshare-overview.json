@@ -12,7 +12,7 @@
       "id": 1,
       "title": "Service Health",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+      "gridPos": { "h": 6, "w": 18, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "name": "Prometheus" },
       "targets": [
         {
@@ -31,6 +31,45 @@
             "steps": [
               { "color": "red", "value": null },
               { "color": "green", "value": 1 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Unresolved Reports",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "name": "Prometheus" },
+      "targets": [
+        {
+          "expr": "bookshare_reports_unresolved",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
             ]
           },
           "color": { "mode": "thresholds" }
